@@ -6,7 +6,7 @@ This spares your poor drive from getting destroyed
 ```bash
 mkdir -p /mnt/ramdisk
 sudo mount -t ramfs -o size=1024MB ramfs /mnt/ramdisk
-chown $(whoami):$(whoami) /mnt/ramdisk
+sudo chown $(whoami):$(whoami) /mnt/ramdisk
 mkdir -p /mnt/ramdisk/{input,output}
 ```
 
@@ -36,6 +36,13 @@ If you are fuzzing and have access to source code, you should probably be using 
 # Binary-only target
 
 ## With qemu
+Note that cmplog does not appear to be implemented for anything other than `i386` and `x86_64` at this point, so if you need good coverage information on an unsupported architecture you will have to implement that on your own.
 ```bash
 AFL_TMPDIR=/mnt/ramdisk afl-fuzz -i /mnt/ramdisk/input -o /mnt/ramdisk/output -Q -c 0 -- ./fuzz_qemu
+```
+
+## Unicorn mode
+Example using the sample test python harness. *NOTE:* There is a good chance that the `unicornafl` python package will yell at you if you try to run it without `afl-fuzz`
+```bash
+AFL_TMPDIR=/mnt/ramdisk afl-fuzz -U -m none -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- python3 simple_test_harness.py ./simple_target.bin
 ```
