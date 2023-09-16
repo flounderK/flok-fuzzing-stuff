@@ -42,12 +42,32 @@ AFL_TMPDIR=/mnt/ramdisk afl-fuzz -i /mnt/ramdisk/input -o /mnt/ramdisk/output -Q
 ```
 
 ### Running binaries in the wrong system environment
-Binaries are normally compiled to run on a single version of linux with a set version of glibc. 
-This is almost always true for ctf challenges. If you still want to run it on your system and you don't have the same os version/environment that a ctf challenge was made for, you can bypass that to some degree by copying the requisite binary and libraries for a challenge locally, changing the binary's interpreter with `patchelf --set-interpreter "<ld-interpreter>" "<binary>"`, and 
+Binaries are normally compiled to run on a single version of linux with a set version of glibc.
+This is almost always true for ctf challenges. If you still want to run it on your system and you don't have the same os version/environment that a ctf challenge was made for, you can bypass that to some degree by copying the requisite binary and libraries for a challenge locally, changing the binary's interpreter with `patchelf --set-interpreter "<ld-interpreter>" "<binary>"`, and
 setting the environment variable `QEMU_SET_ENV="LD_LIBRARY_PATH=$(pwd)"`, which will work for the underlying qemu instance that afl uses
 ```
 AFL_TMPDIR=/mnt/ramdisk QEMU_SET_ENV="LD_LIBRARY_PATH=$(pwd)" afl-fuzz -Q -c 0 -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- ./ctf_chal
 ```
+
+Futher, you will likely encounter some situations where you just want to fuzz a challenge that does not natually exit.
+```
+# qemu's base for afl binaries is always 0x4000000000
+ADDR_BASE=0x4000000000
+# find the start addr. This can be done with readelf usually, or by reversing it out
+MAIN_OFFSET=$(readelf -sW softshell | grep -E ' main' | head -n1 | tr -s ' ' | cut -d ' ' -f3)
+START_ADDR=$(($ADDR_BASE+0x$MAIN_OFFSET))
+
+# the address to start the loop
+AFL_QEMU_PERSISTENT_ADDR=$(printf "%x\n" $START_ADDR)
+
+# LOOP_END_OFFSET will likely have to be reversed out
+AFL_QEMU_PERSISTENT_RET=$(($ADDR_BASE+<LOOP_END_OFFSET>))
+
+# actual run command
+AFL_TMPDIR=/mnt/ramdisk QEMU_SET_ENV="LD_LIBRARY_PATH=$(pwd)" AFL_QEMU_PERSISTENT_ADDR=0x4000001d49 AFL_QEMU_PERSISTENT_RET=0x4000001fc3 afl-fuzz -Q -c 0 -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- ./ctf_chal
+```
+
+see `qemu_mode/README.persistent.md` for more details
 
 ## Unicorn mode
 Example using the sample test python harness. *NOTE:* There is a good chance that the `unicornafl` python package will yell at you if you try to run it without `afl-fuzz`
