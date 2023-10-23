@@ -41,6 +41,8 @@ Note that cmplog does not appear to be implemented for anything other than `i386
 AFL_TMPDIR=/mnt/ramdisk afl-fuzz -i /mnt/ramdisk/input -o /mnt/ramdisk/output -Q -c 0 -- ./fuzz_qemu
 ```
 
+Qemu can be built for different targets using the `CPU_TARGET` environment variable when building qemu.
+
 ### Running binaries in the wrong system environment
 Binaries are normally compiled to run on a single version of linux with a set version of glibc.
 This is almost always true for ctf challenges. If you still want to run it on your system and you don't have the same os version/environment that a ctf challenge was made for, you can bypass that to some degree by copying the requisite binary and libraries for a challenge locally, changing the binary's interpreter with `patchelf --set-interpreter "<ld-interpreter>" "<binary>"`, and
