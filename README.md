@@ -74,3 +74,8 @@ Example using the sample test python harness. *NOTE:* There is a good chance tha
 ```bash
 AFL_TMPDIR=/mnt/ramdisk afl-fuzz -U -m none -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- python3 simple_test_harness.py ./simple_target.bin
 ```
+
+## Linking together an abomination that uses a custom libc as its interpreter
+```
+clang -Xlinker -rpath=. -Xlinker -Ilibc.so -L. -l:libc.so -o main main.c 
+```
