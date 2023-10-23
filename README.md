@@ -69,6 +69,13 @@ AFL_QEMU_PERSISTENT_RET=$(($ADDR_BASE+<LOOP_END_OFFSET>))
 AFL_TMPDIR=/mnt/ramdisk QEMU_SET_ENV="LD_LIBRARY_PATH=$(pwd)" AFL_QEMU_PERSISTENT_ADDR=0x4000001d49 AFL_QEMU_PERSISTENT_RET=0x4000001fc3 afl-fuzz -Q -c 0 -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- ./ctf_chal
 ```
 
+### Instrumenting shared objects
+qemu mode can instrument shared objects too.
+```
+AFL_INST_LIBS=1
+AFL_QEMU_INST_RANGES=<library-name>
+```
+
 see `qemu_mode/README.persistent.md` for more details
 
 ## Unicorn mode
