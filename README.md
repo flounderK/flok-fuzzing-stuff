@@ -41,6 +41,8 @@ Note that cmplog does not appear to be implemented for anything other than `i386
 AFL_TMPDIR=/mnt/ramdisk afl-fuzz -i /mnt/ramdisk/input -o /mnt/ramdisk/output -Q -c 0 -- ./fuzz_qemu
 ```
 
+Qemu can be built for different targets using the `CPU_TARGET` environment variable when building qemu.
+
 ### Running binaries in the wrong system environment
 Binaries are normally compiled to run on a single version of linux with a set version of glibc.
 This is almost always true for ctf challenges. If you still want to run it on your system and you don't have the same os version/environment that a ctf challenge was made for, you can bypass that to some degree by copying the requisite binary and libraries for a challenge locally, changing the binary's interpreter with `patchelf --set-interpreter "<ld-interpreter>" "<binary>"`, and
@@ -67,10 +69,22 @@ AFL_QEMU_PERSISTENT_RET=$(($ADDR_BASE+<LOOP_END_OFFSET>))
 AFL_TMPDIR=/mnt/ramdisk QEMU_SET_ENV="LD_LIBRARY_PATH=$(pwd)" AFL_QEMU_PERSISTENT_ADDR=0x4000001d49 AFL_QEMU_PERSISTENT_RET=0x4000001fc3 afl-fuzz -Q -c 0 -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- ./ctf_chal
 ```
 
+### Instrumenting shared objects
+qemu mode can instrument shared objects too.
+```
+AFL_INST_LIBS=1
+AFL_QEMU_INST_RANGES=<library-name>
+```
+
 see `qemu_mode/README.persistent.md` for more details
 
 ## Unicorn mode
 Example using the sample test python harness. *NOTE:* There is a good chance that the `unicornafl` python package will yell at you if you try to run it without `afl-fuzz`
 ```bash
 AFL_TMPDIR=/mnt/ramdisk afl-fuzz -U -m none -i /mnt/ramdisk/input -o /mnt/ramdisk/output -- python3 simple_test_harness.py ./simple_target.bin
+```
+
+## Linking together an abomination that uses a custom libc as its interpreter
+```
+clang -Xlinker -rpath=. -Xlinker -Ilibc.so -L. -l:libc.so -o main main.c 
 ```
