@@ -1,5 +1,5 @@
 # flok-fuzzing-stuff
-
+This is just a repo for notes on fuzzing, mostly taken directly from the afl++ in-tree documentation
 
 ## Set up a ramdisk
 This spares your poor drive from getting destroyed
